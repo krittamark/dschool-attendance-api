@@ -1,0 +1,9 @@
+[
+  {
+    "key": "PLACEHOLDERAPIKEY",
+    "name": "Production API Key",
+    "is_active": true,
+    "role": "admin",
+    "created_at": "2026-09-08T20:42:55+07:00"
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "TC-01",
+    "name": "Health Check & Service Status",
+    "passed": true,
+    "elapsed_ms": 33.211125002708286,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/health"
+  },
+  {
+    "id": "TC-02",
+    "name": "Daily Classroom Attendance (Senior High M.401)",
+    "passed": true,
+    "elapsed_ms": 218.07883301516995,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/attendance/daily?classroom=401"
+  },
+  {
+    "id": "TC-03",
+    "name": "Daily Classroom Attendance (Junior High M.101)",
+    "passed": true,
+    "elapsed_ms": 191.20400000247173,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/attendance/daily?classroom=101"
+  },
+  {
+    "id": "TC-04",
+    "name": "Historical Daily Attendance with Date Filter (2026-09-07)",
+    "passed": true,
+    "elapsed_ms": 434.83887502225116,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/attendance/daily?classroom=401&date=2026-09-07"
+  },
+  {
+    "id": "TC-05",
+    "name": "School Overview Attendance & Grade Breakdown",
+    "passed": true,
+    "elapsed_ms": 398.9016249834094,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/attendance/overview"
+  },
+  {
+    "id": "TC-06",
+    "name": "Monthly Classroom Attendance (M.401 Month 9 Year 2569)",
+    "passed": true,
+    "elapsed_ms": 862.4838330142666,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/attendance/monthly?classroom=401&month=9&year=2569"
+  },
+  {
+    "id": "TC-07",
+    "name": "Semester Classroom Attendance (M.401 Term 1)",
+    "passed": true,
+    "elapsed_ms": 378.323916986119,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/attendance/semester?classroom=401&term=1"
+  },
+  {
+    "id": "TC-08",
+    "name": "Student Search by Name (กิตติพิชญ์)",
+    "passed": true,
+    "elapsed_ms": 72.93445800314657,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/students/search?q=%E0%B8%81%E0%B8%B4%E0%B8%95%E0%B8%95%E0%B8%B4%E0%B8%9E%E0%B8%B4%E0%B8%8A%E0%B8%8D%E0%B9%8C"
+  },
+  {
+    "id": "TC-09",
+    "name": "Individual Student Attendance Profile (sd_no 18948 Term 1)",
+    "passed": true,
+    "elapsed_ms": 215.39437500177883,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/students/18948/attendance?term=1"
+  },
+  {
+    "id": "TC-10",
+    "name": "Morning Flag Ceremony Assembly Attendance",
+    "passed": true,
+    "elapsed_ms": 303.2040420221165,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/attendance/flag-ceremony"
+  },
+  {
+    "id": "TC-11",
+    "name": "Validation Error Handling (Search without query parameter)",
+    "passed": true,
+    "elapsed_ms": 1.6202919941861182,
+    "status_code": 400,
+    "url": "http://localhost:8080/api/students/search"
+  },
+  {
+    "id": "TC-12",
+    "name": "Cross-Origin Resource Sharing (CORS Headers)",
+    "passed": true,
+    "elapsed_ms": 1.0717080149333924,
+    "status_code": 200,
+    "url": "http://localhost:8080/api/health"
+  }
+]

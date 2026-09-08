@@ -1,0 +1,1256 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "dschool Student Attendance API",
+    "description": "RESTful Web API สำหรับตรวจสอบข้อมูลการ **ขาด ลา มาสาย เข้าเรียน** ของนักเรียน\nแปลงข้อมูลจากระบบ dschool (PHP Web Application) ให้กลายเป็น JSON Web API มาตรฐาน\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "ตรวจสอบสถานะการทำงานของเซิร์ฟเวอร์",
+        "operationId": "healthCheck",
+        "tags": [
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "เซิร์ฟเวอร์ทำงานปกติ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/attendance/daily": {
+      "get": {
+        "summary": "Daily Classroom Attendance",
+        "description": "ตรวจสอบการลงเวลาประจำวันของห้องเรียน รายชื่อนักเรียน สถานะ (มา, สาย, ไม่ลงเวลา, ลาป่วย, ลากิจ, ขาด) ประตู และเวลาเข้า-ออก",
+        "operationId": "getDailyAttendance",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "name": "classroom",
+            "in": "query",
+            "description": "เลขห้องเรียน เช่น 101, 102, 401, 617",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "101",
+              "example": "401"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "วันที่ที่ต้องการตรวจสอบ (รูปแบบ YYYY-MM-DD หรือ DD/MM/YYYY) ค่าเริ่มต้นคือวันนี้",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-09-08"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ดึงข้อมูลการลงเวลารายวันสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyAttendanceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "รูปแบบห้องเรียนหรือวันที่ไม่ถูกต้อง",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/attendance/overview": {
+      "get": {
+        "summary": "School Overview Attendance",
+        "description": "สรุปภาพรวมการลงเวลาทั้งโรงเรียน ยอดรวมแยกรายระดับชั้น (ม.1 - ม.6) และแยกรายห้อง",
+        "operationId": "getOverviewAttendance",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "วันที่ที่ต้องการตรวจสอบ (รูปแบบ YYYY-MM-DD) ค่าเริ่มต้นคือวันนี้",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-09-08"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ดึงข้อมูลภาพรวมสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewAttendanceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "รูปแบบวันที่ไม่ถูกต้อง",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/attendance/monthly": {
+      "get": {
+        "summary": "Monthly Classroom Attendance",
+        "description": "สรุปสถิติ ขาด ลา มา สาย สะสมของนักเรียนแต่ละคนในห้องประจำเดือน",
+        "operationId": "getMonthlyAttendance",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "name": "classroom",
+            "in": "query",
+            "description": "เลขห้องเรียน เช่น 101, 401",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "101",
+              "example": "401"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "description": "เลขเดือน 1-12",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "9"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "description": "ปี พ.ศ. เช่น 2569",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2569"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ดึงข้อมูลสรุปประจำเดือนสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyAttendanceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ค่าห้องเรียน เดือน หรือปีไม่ถูกต้อง",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/attendance/semester": {
+      "get": {
+        "summary": "Semester Classroom Attendance",
+        "description": "สรุปสถิติ ขาด ลา มา สาย สะสมของนักเรียนแต่ละคนในห้องตลอดภาคเรียน",
+        "operationId": "getSemesterAttendance",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "name": "classroom",
+            "in": "query",
+            "description": "เลขห้องเรียน เช่น 101, 401",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "101",
+              "example": "401"
+            }
+          },
+          {
+            "name": "term",
+            "in": "query",
+            "description": "ภาคเรียน (1 หรือ 2)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1,
+                2
+              ],
+              "default": 1,
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ดึงข้อมูลสรุปประจำภาคเรียนสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SemesterAttendanceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ค่าห้องเรียนหรือเทอมไม่ถูกต้อง",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/search": {
+      "get": {
+        "summary": "Search Students",
+        "description": "ค้นหานักเรียนด้วยชื่อ นามสกุล หรือรหัสนักเรียน เพื่อรับรหัสภายใน (sd_no) และรูปถ่าย",
+        "operationId": "searchStudents",
+        "tags": [
+          "Students"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "คำค้นหา (ชื่อ นามสกุล หรือรหัสนักเรียน)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "กิตติพิชญ์"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ค้นหาสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentSearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ไม่ได้ระบุคำค้นหา หรือคำค้นหายาวเกินขนาด",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/{sd_no}/attendance": {
+      "get": {
+        "summary": "Student Attendance Profile",
+        "description": "ดึงประวัติการเข้าเรียนรายบุคคล สรุปยอดรวม และประวัติรายวันย้อนหลังทั้งหมด",
+        "operationId": "getStudentAttendanceProfile",
+        "tags": [
+          "Students"
+        ],
+        "parameters": [
+          {
+            "name": "sd_no",
+            "in": "path",
+            "description": "รหัสภายในของนักเรียน (sd_no) ที่ได้จากการค้นหา",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "18948"
+            }
+          },
+          {
+            "name": "term",
+            "in": "query",
+            "description": "ภาคเรียน (1 หรือ 2)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1,
+                2
+              ],
+              "default": 1,
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ดึงประวัติรายบุคคลสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "รหัสนักเรียนไม่ถูกต้อง",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/attendance/flag-ceremony": {
+      "get": {
+        "summary": "Flag Ceremony Attendance",
+        "description": "สรุปสถิติการเข้าร่วมกิจกรรมหน้าเสาธงทั้งโรงเรียนและรายระดับชั้น",
+        "operationId": "getFlagCeremonyAttendance",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "วันที่ที่ต้องการตรวจสอบ (รูปแบบ YYYY-MM-DD)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-09-08"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ดึงข้อมูลกิจกรรมหน้าเสาธงสำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlagCeremonyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/keys": {
+      "get": {
+        "summary": "List All API Keys (Admin)",
+        "description": "ดึงรายการ API Key ทั้งหมดในระบบ พร้อมสถานะการใช้งาน วันที่สร้าง และเวลาที่ใช้งานล่าสุด",
+        "operationId": "listApiKeys",
+        "tags": [
+          "Admin - Key Management"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ดึงรายการคีย์สำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/KeyInfo"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ไม่มีสิทธิ์ Admin"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create / Issue New API Key (Admin)",
+        "description": "สร้างหรือออก API Key ใหม่ในระบบ กำหนดชื่อ Role และสามารถกำหนดรหัสเองหรือให้ระบบสุ่มรหัสให้อัตโนมัติ",
+        "operationId": "createApiKey",
+        "tags": [
+          "Admin - Key Management"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "LINE Bot Service"
+                  },
+                  "key": {
+                    "type": "string",
+                    "example": "dsk_live_custom_key_123"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "client",
+                      "admin"
+                    ],
+                    "default": "client"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "สร้าง API Key สำเร็จ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KeyInfo"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ข้อมูลนำเข้าไม่ถูกต้อง หรือคีย์ซ้ำ"
+          }
+        }
+      }
+    },
+    "/api/admin/keys/revoke": {
+      "post": {
+        "summary": "Revoke API Key (Admin)",
+        "description": "เพิกถอนสิทธิ์การใช้งาน API Key ทำให้ไม่สามารถนำไปเรียกใช้งาน API ได้อีกต่อไป (ตอบกลับ 401 ทันที)",
+        "operationId": "revokeApiKey",
+        "tags": [
+          "Admin - Key Management"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "example": "dsk_live_04abd0f4792ed29198ab5f23fa3a9428"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "เพิกถอนสิทธิ์คีย์สำเร็จ"
+          },
+          "404": {
+            "description": "ไม่พบคีย์ในระบบ"
+          },
+          "403": {
+            "description": "ไม่อนุญาตให้เพิกถอน Master Admin Key"
+          }
+        }
+      }
+    },
+    "/api/admin/keys/activate": {
+      "post": {
+        "summary": "Re-activate API Key (Admin)",
+        "description": "เปิดใช้งาน API Key ที่เคยถูกเพิกถอนให้กลับมาใช้งานได้ใหม่อีกครั้ง",
+        "operationId": "activateApiKey",
+        "tags": [
+          "Admin - Key Management"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "example": "dsk_live_04abd0f4792ed29198ab5f23fa3a9428"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "เปิดใช้งานคีย์สำเร็จ"
+          },
+          "404": {
+            "description": "ไม่พบคีย์ในระบบ"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseResponse": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Operation completed successfully"
+          },
+          "error": {
+            "type": "string",
+            "example": null
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "error"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string",
+            "example": "Invalid parameter"
+          }
+        }
+      },
+      "HealthResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "service": {
+                    "type": "string",
+                    "example": "dschool-attendance-api"
+                  },
+                  "status": {
+                    "type": "string",
+                    "example": "healthy"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "example": "2026-09-08T19:23:38+07:00"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DailyStudentItem": {
+        "type": "object",
+        "properties": {
+          "false": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "กิตติพิชญ์ ปัชชามูล"
+          },
+          "gate": {
+            "type": "string",
+            "example": "Face AI"
+          },
+          "status": {
+            "type": "string",
+            "description": "สถานะ: มา, สาย, ไม่ลงเวลา, ลาป่วย, ลากิจ, ขาด",
+            "example": "มา"
+          },
+          "check_in_time": {
+            "type": "string",
+            "example": "07:05"
+          },
+          "check_out_time": {
+            "type": "string",
+            "example": "-"
+          }
+        }
+      },
+      "ClassSummaryStat": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "example": "มา"
+          },
+          "male": {
+            "type": "integer",
+            "example": 14
+          },
+          "female": {
+            "type": "integer",
+            "example": 13
+          },
+          "total": {
+            "type": "integer",
+            "example": 27
+          }
+        }
+      },
+      "DailyAttendanceData": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "8 ก.ย. 2569"
+          },
+          "classroom": {
+            "type": "string",
+            "example": "ม.401"
+          },
+          "summary": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassSummaryStat"
+            }
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailyStudentItem"
+            }
+          }
+        }
+      },
+      "DailyAttendanceResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/DailyAttendanceData"
+              }
+            }
+          }
+        ]
+      },
+      "AttendanceCounts": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 3534
+          },
+          "present": {
+            "type": "integer",
+            "example": 3340
+          },
+          "off_campus": {
+            "type": "integer",
+            "example": 60
+          },
+          "unrecorded": {
+            "type": "integer",
+            "example": 55
+          },
+          "sick_leave": {
+            "type": "integer",
+            "example": 49
+          },
+          "personal_leave": {
+            "type": "integer",
+            "example": 20
+          },
+          "absent": {
+            "type": "integer",
+            "example": 10
+          }
+        }
+      },
+      "GradeLevelAttendance": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "grade": {
+                "type": "string",
+                "example": "ม.1"
+              }
+            }
+          },
+          {
+            "$ref": "#/components/schemas/AttendanceCounts"
+          }
+        ]
+      },
+      "ClassroomAttendance": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "classroom": {
+                "type": "string",
+                "example": "ม.101"
+              }
+            }
+          },
+          {
+            "$ref": "#/components/schemas/AttendanceCounts"
+          }
+        ]
+      },
+      "OverviewAttendanceData": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "8 ก.ย. 2569"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/AttendanceCounts"
+          },
+          "grade_levels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GradeLevelAttendance"
+            }
+          },
+          "classrooms": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ClassroomAttendance"
+              }
+            }
+          }
+        }
+      },
+      "OverviewAttendanceResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/OverviewAttendanceData"
+              }
+            }
+          }
+        ]
+      },
+      "StudentMonthlyItem": {
+        "type": "object",
+        "properties": {
+          "false": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "กิตติพิชญ์ ปัชชามูล"
+          },
+          "present": {
+            "type": "integer",
+            "example": 3
+          },
+          "late": {
+            "type": "integer",
+            "example": 1
+          },
+          "unrecorded": {
+            "type": "integer",
+            "example": 3
+          },
+          "sick_leave": {
+            "type": "integer",
+            "example": 0
+          },
+          "personal_leave": {
+            "type": "integer",
+            "example": 0
+          },
+          "absent": {
+            "type": "integer",
+            "example": 0
+          }
+        }
+      },
+      "MonthlyAttendanceData": {
+        "type": "object",
+        "properties": {
+          "year_month": {
+            "type": "string",
+            "example": "กันยายน  2569"
+          },
+          "classroom": {
+            "type": "string",
+            "example": "ม.401"
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentMonthlyItem"
+            }
+          }
+        }
+      },
+      "MonthlyAttendanceResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/MonthlyAttendanceData"
+              }
+            }
+          }
+        ]
+      },
+      "SemesterAttendanceData": {
+        "type": "object",
+        "properties": {
+          "term": {
+            "type": "integer",
+            "example": 1
+          },
+          "classroom": {
+            "type": "string",
+            "example": "ม.401"
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentMonthlyItem"
+            }
+          }
+        }
+      },
+      "SemesterAttendanceResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SemesterAttendanceData"
+              }
+            }
+          }
+        ]
+      },
+      "StudentSearchResult": {
+        "type": "object",
+        "properties": {
+          "false": {
+            "type": "integer",
+            "example": 1
+          },
+          "sd_no": {
+            "type": "string",
+            "example": "18948"
+          },
+          "name": {
+            "type": "string",
+            "example": "กิตติพิชญ์ ปัชชามูล"
+          },
+          "photo_url": {
+            "type": "string",
+            "example": "https://dschool-l1.gp-education.com/dschool_app_v2020/card_template/img_proxy.php?..."
+          }
+        }
+      },
+      "StudentSearchResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StudentSearchResult"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "StudentDayLog": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "08 ก.ย. 69"
+          },
+          "status": {
+            "type": "string",
+            "example": "มา"
+          }
+        }
+      },
+      "StudentProfileData": {
+        "type": "object",
+        "properties": {
+          "sd_no": {
+            "type": "string",
+            "example": "18948"
+          },
+          "term": {
+            "type": "integer",
+            "example": 1
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "present": {
+                "type": "integer",
+                "example": 57
+              },
+              "late": {
+                "type": "integer",
+                "example": 6
+              },
+              "unrecorded": {
+                "type": "integer",
+                "example": 52
+              },
+              "sick_leave": {
+                "type": "integer",
+                "example": 2
+              },
+              "personal_leave": {
+                "type": "integer",
+                "example": 0
+              },
+              "absent": {
+                "type": "integer",
+                "example": 0
+              }
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentDayLog"
+            }
+          }
+        }
+      },
+      "StudentProfileResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/StudentProfileData"
+              }
+            }
+          }
+        ]
+      },
+      "FlagCeremonyLevel": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "example": "ม.1"
+          },
+          "total": {
+            "type": "integer",
+            "example": 563
+          },
+          "total_male": {
+            "type": "integer",
+            "example": 294
+          },
+          "total_female": {
+            "type": "integer",
+            "example": 269
+          },
+          "attend_total": {
+            "type": "integer",
+            "example": 313
+          },
+          "attend_male": {
+            "type": "integer",
+            "example": 157
+          },
+          "attend_female": {
+            "type": "integer",
+            "example": 156
+          }
+        }
+      },
+      "FlagCeremonyData": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "8 ก.ย. 2569"
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "example": 3534
+              },
+              "attended": {
+                "type": "integer",
+                "example": 462
+              },
+              "unattended": {
+                "type": "integer",
+                "example": 3072
+              },
+              "absent": {
+                "type": "integer",
+                "example": 0
+              }
+            }
+          },
+          "grade_levels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlagCeremonyLevel"
+            }
+          },
+          "classrooms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlagCeremonyLevel"
+            }
+          }
+        }
+      },
+      "FlagCeremonyResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/FlagCeremonyData"
+              }
+            }
+          }
+        ]
+      },
+      "KeyInfo": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "dsk_live_04abd0f4792ed29198ab5f23fa3a9428"
+          },
+          "name": {
+            "type": "string",
+            "example": "LINE Bot Service"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "role": {
+            "type": "string",
+            "example": "client"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-08T19:55:00+07:00"
+          },
+          "revoked_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "last_used_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API Key authentication via X-API-Key header"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API Key authentication via Authorization: Bearer <token> header"
+      },
+      "QueryApiKey": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key",
+        "description": "API Key authentication via query parameter"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "BearerAuth": []
+    },
+    {
+      "QueryApiKey": []
+    }
+  ]
+}
